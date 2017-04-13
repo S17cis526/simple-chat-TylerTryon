@@ -1,8 +1,22 @@
-const PORT = 3000;
+const PORT = 3005;
 
 var fs = require('fs');
 var http = require('http');
 var server = new http.Server(handleRequest);
+var io = require('socket.io')(server);
+
+var connected = 0;
+
+io.on('connection', function(socket){
+  var name = 'User' + connected;
+  connected++;
+  console.log("A user!");
+  socket.emit('welcome', {message: "Welcome!"});
+});
+
+io.on('message', function(text){
+  io.emit('message', text);
+})
 
 function handleRequest(req, res) {
   switch(req.url) {
@@ -10,9 +24,9 @@ function handleRequest(req, res) {
     case 'index.html':
       fs.readFile('public/index.html', function(err, data){
         if(err){
-          res.setHeader("Content-Type", "text/html");
-          res.end(data);
         }
+        res.setHeader("Content-Type", "text/html");
+        res.end(data);
       });
       break;
     case 'simple-chat.css':
